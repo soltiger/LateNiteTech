@@ -19,15 +19,15 @@
         <div id="mainContainer" class="container-fluid">
             <nav class="navbar navbar-light">
                 <a class="navbar-brand" href="#">LateNiteTech</a>
-                <a v-if="appState.authenticated" v-on:click="newPost" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+                <a v-if="appState.authenticated" @click="newPost" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
                     <img class="icon" src="open-iconic/svg/plus.svg" alt="New Post"> 
                     New Post
                 </a>
-                <button v-if="!appState.authenticated" v-on:click="login" id="loginButton" class="btn btn-outline-dark my-2 my-sm-0">
+                <button v-if="!appState.authenticated" @click="login" id="loginButton" class="btn btn-outline-dark my-2 my-sm-0">
                     <img class="icon" src="open-iconic/svg/account-login.svg" alt="Login"> 
                     Login
                 </button>
-                <button v-if="appState.authenticated" v-on:click="logout" id="logoutButton" class="btn btn-outline-dark my-2 my-sm-0">
+                <button v-if="appState.authenticated" @click="logout" id="logoutButton" class="btn btn-outline-dark my-2 my-sm-0">
                     <img class="icon" src="open-iconic/svg/account-logout.svg" alt="Logout"> 
                     Logout
                 </button>
@@ -37,33 +37,13 @@
                 <div class="col-3">
                     <div class="mr-2 box">
                         <div class="sidebarContent">
-                            <p>+ POSTS</p>
                             <ul> 
-                                <li v-for="y in getPostsByYears()">
-                                    {{ y.year }}
-                                    <ul>
-                                        <li v-for="blogPost in y.posts">
-                                            <a href="javascript:void(0);" v-on:click="edit( blogPost )">
-                                                {{ formatDate( blogPost ) }} - 
-                                                {{ blogPost.topic }}
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-
-                            <p v-if="appState.authenticated">+ DRAFTS</p>
-                            <ul v-if="appState.authenticated"> 
-                                <li v-for="y in getPostsByYears( true )">
-                                    {{ y.year }}
-                                    <ul>
-                                        <li v-for="blogPost in y.posts" v-on:click="edit( blogPost )">
-                                            <a href="javascript:void(0);">
-                                                {{ formatDate( blogPost ) }} - 
-                                                {{ blogPost.topic }}
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <li v-if="!blogPost.draft || appState.authenticated && blogPost.draft" v-for="blogPost in blogPosts">
+                                    <a href="javascript:void(0);" @click="display( blogPost.id )">
+                                        {{ formatDate( blogPost ) }} - 
+                                        {{ blogPost.topic }}
+                                        <span v-if="blogPost.draft">- DRAFT</span>
+                                    </a>
                                 </li>
                             </ul>
                         </div>
@@ -74,21 +54,26 @@
                     <div class="mainContent">
                         <div class="row no-gutters">
                             <div id="mainHeaderRow" class="col">
-                                <div class="row" v-if="!appState.editMode">
+                                <div class="row" v-if='appState.pageMode == "display"'>
                                     <div class="col-12">
-                                        <p id="blogPostTitle">Date - Topic</p>
+                                        <p id="blogPostTitle">
+                                            <span v-if="selectedBlogPost.id">
+                                                {{ formatDate( selectedBlogPost ) }} -
+                                                {{ selectedBlogPost.topic }}
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div class="row" v-if="appState.editMode">
+                                <div class="row" v-if='appState.pageMode == "edit"'>
                                     <div class="col-2">
                                         <span id="blogPostTitle">
-                                            {{ this.editStatus.date }}
+                                            {{ formatDate( selectedBlogPost ) }}
                                         </span>
                                     </div>
             
                                     <div id="mainHeaderRow" class="col-6">
-                                        <input type="text" class="form-control" placeholder="Topic" :value="editStatus.topic">
+                                        <input type="text" class="form-control" placeholder="Topic" :value="selectedBlogPost.topic">
                                     </div>
         
                                     <div class="col-4" align="right">
@@ -101,36 +86,43 @@
                         </div>
 
                         <div id="mainBlogPost" class="row no-gutters">
-                            <div v-if="appState.authenticated && !appState.editMode">
-                                Blog post
+                            <div v-if='appState.authenticated && appState.pageMode == "display"'>
+                                <div v-html="compiledMarkdown"></div>
                             </div>
 
-                            <div v-if="appState.editMode" id="editor" class="col">
-                                <!--
-                                <textarea :value="input" @input="update"></textarea>
+                            <div v-if='appState.pageMode == "edit"' id="editor" class="col">
+                                <textarea :value="selectedBlogPost.content" @input="updateEditor"></textarea>
                                 <div v-html="compiledMarkdown"></div>
-                                -->
-                                <textarea>{{ this.editStatus.content }}</textarea>
                             </div>
                         </div>
 
                         <div id="mainButtons" class="row no-gutters">
-                            <a v-if="appState.authenticated && !appState.editMode" v-on:click="edit( null )" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+                            <a v-if='appState.authenticated && appState.pageMode == "display"' @click="edit()" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
                                 <img class="icon" src="open-iconic/svg/pencil.svg" alt="Edit"> 
                                 Edit
                             </a>
 
-                            <a v-if="appState.editMode" v-on:click="save" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
-                                <img class="icon" src="open-iconic/svg/thumb-up.svg" alt="Save"> 
+                            <a v-if='appState.pageMode == "edit" && selectedBlogPost.draft' @click="publish" class="btn btn-outline-dark my-2 my-sm-0" style="margin-right: 15px">
+                                <img class="icon" src="open-iconic/svg/thumb-up.svg" alt="Publish"> 
+                                Publish
+                            </a>
+
+                            <a v-if='!selectedBlogPost.id && appState.pageMode == "edit"' @click="save" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+                                <img class="icon" src="open-iconic/svg/thumb-up.svg" alt="Display"> 
                                 Save
                             </a>
     
-                            <a v-if="appState.authenticated && !appState.editMode" class="btn btn-outline-dark my-2 my-sm-0">
+                            <a v-if='selectedBlogPost.id && appState.pageMode == "edit"' @click="display( selectedBlogPost.id )" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+                                <img class="icon" src="open-iconic/svg/thumb-up.svg" alt="Display"> 
+                                Display
+                            </a>
+    
+                            <a v-if='appState.authenticated && appState.pageMode == "display"' @click="deletePost( selectedBlogPost.id )" class="btn btn-outline-dark my-2 my-sm-0">
                                 <img class="icon" src="open-iconic/svg/thumb-down.svg" alt="Delete"> 
                                 Delete
                             </a>
 
-                            <a v-if="appState.editMode" v-on:click="discard" class="btn btn-outline-dark my-2 my-sm-0">
+                            <a v-if='appState.pageMode == "edit"' @click="discard" class="btn btn-outline-dark my-2 my-sm-0">
                                 <img class="icon" src="open-iconic/svg/thumb-down.svg" alt="Discard"> 
                                 Discard
                             </a>                                
