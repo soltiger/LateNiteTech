@@ -4,6 +4,7 @@ LateNiteTech blog
 #### DONE
 * Initial templates
 * MD editor
+* Functional mockup
 #### TODO
 * Vue.js implementation
 * Webpack
