@@ -1,0 +1,146 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+
+        <script src="https://unpkg.com/marked@0.3.6"></script>
+        <script src="https://unpkg.com/lodash@4.16.0"></script>
+
+        <link href="css/latenitetech.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <div id="mainContainer" class="container-fluid">
+            <nav class="navbar navbar-light">
+                <a class="navbar-brand" href="#">LateNiteTech</a>
+                <a v-if="appState.authenticated" v-on:click="newPost" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+                    <img class="icon" src="open-iconic/svg/plus.svg" alt="New Post"> 
+                    New Post
+                </a>
+                <button v-if="!appState.authenticated" v-on:click="login" id="loginButton" class="btn btn-outline-dark my-2 my-sm-0">
+                    <img class="icon" src="open-iconic/svg/account-login.svg" alt="Login"> 
+                    Login
+                </button>
+                <button v-if="appState.authenticated" v-on:click="logout" id="logoutButton" class="btn btn-outline-dark my-2 my-sm-0">
+                    <img class="icon" src="open-iconic/svg/account-logout.svg" alt="Logout"> 
+                    Logout
+                </button>
+            </nav>
+            
+            <div id="mainRow" class="row no-gutters">
+                <div class="col-3">
+                    <div class="mr-2 box">
+                        <div class="sidebarContent">
+                            <p>+ POSTS</p>
+                            <ul> 
+                                <li v-for="y in getPostsByYears()">
+                                    {{ y.year }}
+                                    <ul>
+                                        <li v-for="blogPost in y.posts">
+                                            <a href="javascript:void(0);" v-on:click="edit( blogPost )">
+                                                {{ formatDate( blogPost ) }} - 
+                                                {{ blogPost.topic }}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <p v-if="appState.authenticated">+ DRAFTS</p>
+                            <ul v-if="appState.authenticated"> 
+                                <li v-for="y in getPostsByYears( true )">
+                                    {{ y.year }}
+                                    <ul>
+                                        <li v-for="blogPost in y.posts" v-on:click="edit( blogPost )">
+                                            <a href="javascript:void(0);">
+                                                {{ formatDate( blogPost ) }} - 
+                                                {{ blogPost.topic }}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-9 box">
+                    <div class="mainContent">
+                        <div class="row no-gutters">
+                            <div id="mainHeaderRow" class="col">
+                                <div class="row" v-if="!appState.editMode">
+                                    <div class="col-12">
+                                        <p id="blogPostTitle">Date - Topic</p>
+                                    </div>
+                                </div>
+
+                                <div class="row" v-if="appState.editMode">
+                                    <div class="col-2">
+                                        <span id="blogPostTitle">
+                                            {{ this.editStatus.date }}
+                                        </span>
+                                    </div>
+            
+                                    <div id="mainHeaderRow" class="col-6">
+                                        <input type="text" class="form-control" placeholder="Topic" :value="editStatus.topic">
+                                    </div>
+        
+                                    <div class="col-4" align="right">
+                                        <a target="_blank" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet" class="btn btn-outline-dark my-2 my-sm-0">
+                                            <img class="icon" src="open-iconic/svg/info.svg" alt="MD Cheat Sheet">
+                                        </a>
+                                    </div>
+                                </div>    
+                            </div>
+                        </div>
+
+                        <div id="mainBlogPost" class="row no-gutters">
+                            <div v-if="appState.authenticated && !appState.editMode">
+                                Blog post
+                            </div>
+
+                            <div v-if="appState.editMode" id="editor" class="col">
+                                <!--
+                                <textarea :value="input" @input="update"></textarea>
+                                <div v-html="compiledMarkdown"></div>
+                                -->
+                                <textarea>{{ this.editStatus.content }}</textarea>
+                            </div>
+                        </div>
+
+                        <div id="mainButtons" class="row no-gutters">
+                            <a v-if="appState.authenticated && !appState.editMode" v-on:click="edit( null )" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+                                <img class="icon" src="open-iconic/svg/pencil.svg" alt="Edit"> 
+                                Edit
+                            </a>
+
+                            <a v-if="appState.editMode" v-on:click="save" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+                                <img class="icon" src="open-iconic/svg/thumb-up.svg" alt="Save"> 
+                                Save
+                            </a>
+    
+                            <a v-if="appState.authenticated && !appState.editMode" class="btn btn-outline-dark my-2 my-sm-0">
+                                <img class="icon" src="open-iconic/svg/thumb-down.svg" alt="Delete"> 
+                                Delete
+                            </a>
+
+                            <a v-if="appState.editMode" v-on:click="discard" class="btn btn-outline-dark my-2 my-sm-0">
+                                <img class="icon" src="open-iconic/svg/thumb-down.svg" alt="Discard"> 
+                                Discard
+                            </a>                                
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </body>
+
+    <script src="js/app.js"></script>
+    <script src="js/editor.js"></script>
+</html>
