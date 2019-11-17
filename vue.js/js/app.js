@@ -89,6 +89,9 @@ new Vue({
         updateEditor: _.debounce( function ( e ) {
             this.selectedBlogPost.content = e.target.value
             }, 300),
+        updateTopic: _.debounce( function ( e ) {
+            this.selectedBlogPost.topic = e.target.value
+            }, 300),
         findNextID: function( ) {
             let biggest = -1;
             this.blogPosts.forEach( function( post ) { if( post.id > biggest ) biggest = post.id; } );

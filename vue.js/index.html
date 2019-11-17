@@ -73,7 +73,7 @@
                                     </div>
             
                                     <div id="mainHeaderRow" class="col-6">
-                                        <input type="text" class="form-control" placeholder="Topic" :value="selectedBlogPost.topic">
+                                        <input :value="selectedBlogPost.topic" @input="updateTopic" type="text" class="form-control" placeholder="Topic">
                                     </div>
         
                                     <div class="col-4" align="right">
