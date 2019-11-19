@@ -58,7 +58,7 @@
                                     <div class="col-12">
                                         <p id="blogPostTitle">
                                             <span v-if="selectedBlogPost.id">
-                                                {{ formatDate( selectedBlogPost ) }} -
+                                                {{ formattedDate }} -
                                                 {{ selectedBlogPost.topic }}
                                             </span>
                                         </p>
@@ -68,12 +68,12 @@
                                 <div class="row" v-if='appState.pageMode == "edit"'>
                                     <div class="col-2">
                                         <span id="blogPostTitle">
-                                            {{ formatDate( selectedBlogPost ) }}
+                                            {{ formattedDate }}
                                         </span>
                                     </div>
             
                                     <div id="mainHeaderRow" class="col-6">
-                                        <input :value="selectedBlogPost.topic" @input="updateTopic" type="text" class="form-control" placeholder="Topic">
+                                        <input v-model="selectedBlogPost.topic" type="text" class="form-control" placeholder="Topic">
                                     </div>
         
                                     <div class="col-4" align="right">

@@ -30,6 +30,9 @@ new Vue({
     computed: {
         compiledMarkdown: function () {
             return marked( this.selectedBlogPost.content, { sanitize: true } );
+        },
+        formattedDate: function() {
+            return this.formatDate( this.selectedBlogPost );
         }
     },
     methods: {
