@@ -5,11 +5,11 @@ LateNiteTech blog
 * Initial templates
 * MD editor
 * Functional mockup
-#### TODO
 * Vue.js implementation
-* Webpack
-* Firebase backend
 * Drafts
+#### TODO
+* Firebase backend
 * Authentication
 * Firebase hosting
-* Images
+* Let user upload and display uploaded images and files
+* Webpack
