@@ -35,17 +35,23 @@
             
             <div id="mainRow" class="row no-gutters">
                 <div class="col-3">
-                    <div class="mr-2 box">
+                    <div class="mr-3 box">
                         <div class="sidebarContent">
-                            <ul> 
-                                <li v-if="!blogPost.draft || appState.authenticated && blogPost.draft" v-for="blogPost in blogPosts">
+                            <p v-for="year in getYears( appState.authenticated )">
+                                <span class="yearDivider">{{ year }} ({{ postsByYear( year, appState.authenticated ) }} posts)</span><br>
+
+                                <span 
+                                    class="blogPostLink"
+                                    v-for="blogPost in getPosts( year, appState.authenticated )" 
+                                    v-if="!blogPost.draft || appState.authenticated && blogPost.draft"
+                                >
                                     <a href="javascript:void(0);" @click="display( blogPost.id )">
                                         {{ formatDate( blogPost ) }} - 
                                         {{ blogPost.topic }}
                                         <span v-if="blogPost.draft">- DRAFT</span>
-                                    </a>
-                                </li>
-                            </ul>
+                                    </a><br>
+                                </span>
+                            </p>
                         </div>
                     </div>
                 </div>

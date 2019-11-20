@@ -117,16 +117,35 @@ new Vue({
 
             return postYears;
         },
-        getYears: function( drafts = false ) {
+        getYears: function( includeDrafts = false ) {
             // Get years only
             let years = [];
-            const posts = this.blogPosts.filter( post => post.draft == drafts );
+            let posts = this.blogPosts;
+
+            // Filter drafts out?
+            if( !includeDrafts ) {
+                posts = posts.filter( post => !post.draft );
+            }
+
             posts.forEach( p => { years.push( p.year ) } );
-            // Return unique years
-            return years.filter( ( y,i,self ) => self.indexOf( y ) == i );
+
+            // Get unique years
+            years = years.filter( ( y,i,self ) => self.indexOf( y ) == i );
+            
+            return years;
         },
-        getPosts: function(y, drafts = false)  {
-            return this.blogPosts.filter( post => ( post.year == y && post.draft == drafts ) );
+        postsByYear: function( year, includeDrafts = false ) {
+            return this.getPosts( year, includeDrafts ).length;
+        },
+        getPosts: function( year, includeDrafts = false )  {
+            let posts = this.blogPosts;
+
+            // Filter drafts out?
+            if( !includeDrafts ) {
+                posts = posts.filter( post => !post.draft );
+            }
+
+            return posts.filter( post => ( post.year == year ) );
         },
         getPost: function( id )  {
             return this.blogPosts.filter( post => post.id == id )[0];
