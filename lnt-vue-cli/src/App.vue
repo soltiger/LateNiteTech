@@ -1,35 +1,44 @@
 <template>
-  <div id="mainContainer" class="container-fluid">
+  <!-- App container for all page html --->
+  <div id="appContainer" class="container-fluid">
+    <!-- Header -->
     <AppHeader v-bind:authenticated="appState.authenticated"></AppHeader>
-        
-    <div id="mainRow" class="row no-gutters">
+    
+    <!-- Bottom / main part of app -->
+    <div id="mainContainer" class="row no-gutters">
+
+      <!-- Sidebar -->
       <div class="col-3">
           <div class="mr-3 box">
             <AppSidebar v-bind:authenticated="appState.authenticated" v-bind:blogPosts="blogPosts"></AppSidebar>
           </div>
       </div>
 
+      <!-- Blog Post -->
       <div class="col-9 box">
-        <div class="mainContent">
+        <div id="blogPostContainer">
+
+          <!-- Blog Post Header -->
           <div class="row no-gutters">
-            <div id="mainHeaderRow" class="col">
+            <div id="blogPostHeader" class="col">
+
+              <!-- Header when in display mode -->
               <div class="row" v-if='appState.pageMode == "display"'>
                 <div class="col-12">
-                  <p id="blogPostTitle">
-                    <span v-if="selectedBlogPost.id">
-                      {{ formattedDate }} -
-                      {{ selectedBlogPost.topic }}
-                    </span>
-                  </p>
+                  <span v-if="selectedBlogPost.id">
+                    {{ formattedDate }} -
+                    {{ selectedBlogPost.topic }}
+                  </span>
                 </div>
               </div>
 
+              <!-- Header when in edit mode -->
               <div class="row" v-if='appState.pageMode == "edit"'>
                 <div class="col-2">
-                  <span id="blogPostTitle">{{ formattedDate }}</span>
+                  <span>{{ formattedDate }}</span>
                 </div>
       
-                <div id="mainHeaderRow" class="col-6">
+                <div class="col-6">
                   <input v-model="selectedBlogPost.topic" type="text" class="form-control" placeholder="Topic">
                 </div>
   
@@ -42,15 +51,17 @@
             </div>
           </div>
 
-          <div id="mainBlogPost" class="row no-gutters">
+          <!-- Blog Post Content -->
+          <div id="blogPostContent" class="row no-gutters">
             <MDEditor 
               v-bind:blogPost="selectedBlogPost" 
               v-bind:editEnabled='appState.pageMode == "edit"'
             />
           </div>
 
-          <div id="mainButtons" class="row no-gutters">
-            <a v-if='appState.authenticated && appState.pageMode == "display"' @click="edit()" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
+          <!-- Blog Post Buttons -->
+          <div class="row no-gutters">
+            <a v-if='appState.authenticated && appState.pageMode == "display" && selectedBlogPost.id' @click="edit()" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
               <font-awesome-icon icon="pen" />
               Edit
             </a>
@@ -70,7 +81,7 @@
               Display
             </a>
 
-            <a v-if='appState.authenticated && appState.pageMode == "display"' @click="deletePost( selectedBlogPost.id )" class="btn btn-outline-dark my-2 my-sm-0">
+            <a v-if='appState.authenticated && appState.pageMode == "display" && selectedBlogPost.id' @click="deletePost( selectedBlogPost.id )" class="btn btn-outline-dark my-2 my-sm-0">
               <font-awesome-icon icon="exclamation" />
               Delete
             </a>
@@ -105,12 +116,7 @@ export default {
         authenticated: false,
         pageMode: false
       },
-      selectedBlogPost: {
-            id: 0,
-            date: "",
-            topic: "",
-            content: ""
-      },
+      selectedBlogPost: null,
       blogPosts: [
             { id: 1, year: 2019, month:6, day:4, topic: "Hello World 4", content: "## Blog Post 4\nHello World", draft: false },
             { id: 2, year: 2019, month:4, day:4, topic: "Hello World 3", content: "## Blog Post 3\nHello World", draft: false },
@@ -124,7 +130,8 @@ export default {
   },
   created: function() {
     this.sortPosts();
-    this.selectedBlogPost = this.blogPosts[ 0 ];
+    this.selectedBlogPost = this.getFirstPost();
+
     this.appState.pageMode = "display";
     this.tools = tools;
 
@@ -150,14 +157,16 @@ export default {
     },
     display: function( id ) {
       if( id ) {
-          this.selectedBlogPost = this.getPost( id );
+        this.selectedBlogPost = this.getPost( id );
       }
-
+      else {
+        this.selectedBlogPost = this.getEmptyPost();
+      }
       this.appState.pageMode = "display";
     },
     deletePost: function( id ) {
       this.blogPosts = this.blogPosts.filter( post => post.id != id );
-      this.selectedBlogPost = this.blogPosts[0];
+      this.selectedBlogPost = this.getFirstPost();
       this.appState.pageMode = "display";
     },
     login: function() {
@@ -167,17 +176,7 @@ export default {
       this.appState.authenticated = false;
     },
     newPost: function() {
-      var today = new Date();
-
-      this.selectedBlogPost = { 
-          id: 0, 
-          year: today.getFullYear(),
-          month: (today.getMonth()+1),
-          day: today.getDate(),
-          topic: "New Post",
-          content: ""
-      };
-
+      this.selectedBlogPost = this.getEmptyPost();
       this.appState.pageMode = "edit";
     },
     save: function() {
@@ -189,6 +188,26 @@ export default {
 
       this.appState.pageMode = "display";
     },
+    getEmptyPost: function() {
+      var today = new Date();
+      
+      return {
+          id: 0, 
+          year: today.getFullYear(),
+          month: (today.getMonth()+1),
+          day: today.getDate(),
+          topic: "New Post",
+          content: ""
+      };
+    },
+    getFirstPost: function() {
+      if( this.blogPosts.length ) {
+        return this.blogPosts[ 0 ];
+      }
+      else {
+        return this.getEmptyPost();
+      }
+    },
     publish: function() {
       this.selectedBlogPost.draft = false;
       this.save();
@@ -196,16 +215,8 @@ export default {
     discard: function() {
       this.appState.pageMode = "display";
     },
-    updateEditor: _.debounce( function ( e ) {
-      /*
-      this.selectedBlogPost.content = e.target.value
-      */
-      }, 300),
-    updateTopic: _.debounce( function ( e ) {
-      this.selectedBlogPost.topic = e.target.value
-      }, 300),
     findNextID: function( ) {
-      let biggest = -1;
+      let biggest = 0;
       this.blogPosts.forEach( function( post ) { if( post.id > biggest ) biggest = post.id; } );
       return biggest + 1;
     },
@@ -216,26 +227,13 @@ export default {
 }
 </script>
 
-<style scoped>
-.container-fluid {
-  padding: 5px;
-  padding-bottom: 15px;
-  padding-right: 15px;
-}
-
+<style>
 .btn {
   box-shadow: 10px 10px 5px grey;
 }
 
-#mainContainer {
-  display: flex;
-  flex-flow: column;
-  height: 100%;
-}
-
-#mainRow {
-  flex-grow : 1;
-  height: 100%;
+.icon {
+  width: 20px;
 }
 
 .box {
@@ -243,8 +241,27 @@ export default {
   height: 100%;
   box-shadow: 10px 10px 5px grey;
 }
+</style>
 
-.mainContent {
+<style scoped>
+.container-fluid {
+  padding: 5px;
+  padding-bottom: 15px;
+  padding-right: 15px;
+}
+
+#appContainer {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+#mainContainer {
+  flex-grow : 1;
+  height: 100%;
+}
+
+#blogPostContainer {
   padding: 10px;
   padding-right: 15px;
   height: 100%;
@@ -253,21 +270,14 @@ export default {
   padding-bottom: 15px;
 }
 
-#blogPostTitle {
-  font-size: 25px;
-}
-
-#mainBlogPost {
+#blogPostContent {
   display: flex;
   flex-grow: 1;
   padding-bottom: 10px;
 }
 
-#mainHeaderRow {
+#blogPostHeader {
   margin-bottom: 2px;
-}
-
-.icon {
-  width: 20px;
+  font-size: 25px;
 }
 </style>

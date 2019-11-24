@@ -1,21 +1,27 @@
 <template>
   <nav class="navbar navbar-light">
-    <a class="navbar-brand" href="#">LateNiteTech</a>
+    <div class="row no-gutters" style="width: 100%">
+      <div class="col">
+        <button v-show="authenticated" @click="newPost" class="btn btn-outline-dark my-2 my-sm-0" style="position: absolute; left: 0; bottom: 0;">
+          <font-awesome-icon icon="plus" />
+          New Post
+        </button>
+      </div>
 
-    <a v-if="authenticated" @click="newPost" class="btn btn-outline-dark my-2 my-sm-0 mr-auto">
-      <font-awesome-icon icon="plus" />
-      New Post
-    </a>
+      <span class="navbar-brand" style="margin: 0 auto" href="#">LateNiteTech</span>
 
-    <button v-if="!authenticated" @click="login" id="loginButton" class="btn btn-outline-dark my-2 my-sm-0">
-      <font-awesome-icon icon="sign-in-alt" />
-      Login
-    </button>
+      <div class="col">
+        <button v-show="!authenticated" @click="login" id="loginButton" class="btn btn-outline-dark my-2 my-sm-0" style="position: absolute; right: 0; bottom: 0;">
+          <font-awesome-icon icon="sign-in-alt" />
+          Login
+        </button>
 
-    <button v-if="authenticated" @click="logout" id="logoutButton" class="btn btn-outline-dark my-2 my-sm-0">
-      <font-awesome-icon icon="sign-out-alt" />
-      Logout
-    </button>
+        <button v-show="authenticated" @click="logout" id="logoutButton" class="btn btn-outline-dark my-2 my-sm-0" style="position: absolute; right: 0; bottom: 0;">
+          <font-awesome-icon icon="sign-out-alt" />
+          Logout
+        </button>
+      </div>
+    </div>
   </nav>
 </template>
 
