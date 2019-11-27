@@ -101,10 +101,12 @@
 import MDEditor from './components/MDEditor.vue'
 import AppHeader from './components/AppHeader.vue'
 import AppSidebar from './components/AppSidebar.vue'
+import DateFormatMixin from './mixins/DateFormatMixin'
+
 import { bus } from './main'
-import { tools } from './main'
 
 export default {
+  mixins: [ DateFormatMixin ],
   components: {
     'MDEditor': MDEditor,
     'AppHeader': AppHeader,
@@ -133,7 +135,6 @@ export default {
     this.selectedBlogPost = this.getFirstPost();
 
     this.appState.pageMode = "display";
-    this.tools = tools;
 
     // Signals from AppHeader
     bus.$on( 'loginClicked', (data) => this.login() );
@@ -145,7 +146,7 @@ export default {
   },
   computed: {
     formattedDate: function() {
-      return tools.formatDate( this.selectedBlogPost );
+      return this.formatDate( this.selectedBlogPost );
     }
   },
   methods: {
@@ -223,7 +224,7 @@ export default {
     getPost: function( id )  {
       return this.blogPosts.filter( post => post.id == id )[0];
     }
-  }
+  },
 }
 </script>
 

@@ -9,7 +9,7 @@
           v-if="!blogPost.draft || authenticated && blogPost.draft"
         >
           <a href="javascript:void(0);" @click="displayBlogPost( blogPost.id )">
-            {{ tools.formatDate( blogPost ) }} - 
+            {{ formatDate( blogPost ) }} - 
             {{ blogPost.topic }}
             <span v-if="blogPost.draft">- DRAFT</span>
           </a><br>
@@ -19,14 +19,15 @@
 </template>
 
 <script>
+import DateFormatMixin from '../mixins/DateFormatMixin'
+
 import { bus } from '../main'
-import { tools } from '../main'
 
 export default {
   created: function() {
-    this.tools = tools;
   },
   props: [ 'authenticated', 'blogPosts' ],
+  mixins: [ DateFormatMixin ],
   methods: {
     getYears: function( includeDrafts = false ) {
       // Get years only

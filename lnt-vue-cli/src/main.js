@@ -35,14 +35,6 @@ library.add(
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 export const bus = new Vue();
-export const tools = {
-  formatDate: function( blogPost ) {
-    return blogPost.year + "-" + tools.twoDigits( blogPost.month ) + "-" + tools.twoDigits( blogPost.day );
-  },
-  twoDigits: function( number ) {
-    return number.toString().padStart(2,'0');
-  }
-};
 
 new Vue({
   el: '#app',
