@@ -7,9 +7,9 @@ LateNiteTech blog
 * Functional mockup
 * Vue.js implementation
 * Drafts
+* Webpack
 #### TODO
 * Firebase backend
 * Authentication
 * Firebase hosting
 * Let user upload and display uploaded images and files
-* Webpack
