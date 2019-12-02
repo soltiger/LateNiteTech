@@ -1,8 +1,18 @@
-import Vue from 'vue'
-import App from './App.vue'
+import Vue from 'vue';
+import App from './App.vue';
+import VueRouter from 'vue-router';
 
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import Routes from './routes';
+
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
+Vue.component('font-awesome-icon', FontAwesomeIcon);
+Vue.use( VueRouter );
+
+const router = new VueRouter( { routes: Routes } );
+
+export const bus = new Vue();
 
 // Font Awesome icons
 import { 
@@ -32,11 +42,8 @@ library.add(
   faPlus
 )
 
-Vue.component('font-awesome-icon', FontAwesomeIcon)
-
-export const bus = new Vue();
-
 new Vue({
   el: '#app',
-  render: h => h(App)
+  render: h => h(App),
+  router: router
 })

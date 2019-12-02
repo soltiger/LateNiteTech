@@ -2,10 +2,10 @@
   <nav class="navbar navbar-light">
     <div class="row no-gutters" style="width: 100%">
       <div class="col">
-        <button v-show="authenticated" @click="newPost" class="btn btn-outline-dark my-2 my-sm-0" style="position: absolute; left: 0; bottom: 0;">
+        <router-link v-bind:to="'/add/'" v-show="authenticated" class="btn btn-outline-dark my-2 my-sm-0" style="position: absolute; left: 0; bottom: 0;">
           <font-awesome-icon icon="plus" />
           New Post
-        </button>
+        </router-link>
       </div>
 
       <span class="navbar-brand" style="margin: 0 auto" href="#">LateNiteTech</span>
